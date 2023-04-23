@@ -7,26 +7,54 @@
 
 import Foundation
 
-struct Student {
+class Info {
     let name: String
+    var subject: [String: String]
+    
+    init(name: String, subject: [String : String]? = nil) {
+        self.name = name
+        self.subject = subject ?? [:]
+    }
 }
 
-struct Info {
-    let student: Student
-    let subject: String?
-    let score: String?
-}
-
-private var students = [Student]()
 private var infomations = [Info]()
 private var loop: Bool = true
 
-
-private func checkStudent(name: String) -> Bool {
-    let check = students.contains { $0.name == name }
-    return check
+private func getIndex(name: String) -> Int? {
+    let index = infomations.firstIndex { $0.name == name }
+    return index
 }
 
+private func getGrade(name: String, index: Int) {
+    var totalScore: Double = 0
+    let subjects = infomations[index].subject
+    for i in subjects {
+        print("\(i.key): \(i.value)")
+        switch i.value {
+        case "A+":
+            totalScore += 4.5
+        case "A":
+            totalScore += 4.0
+        case "B+":
+            totalScore += 3.5
+        case "B":
+            totalScore += 3.0
+        case "C+":
+            totalScore += 2.5
+        case "C":
+            totalScore += 2.0
+        case "D+":
+            totalScore += 1.5
+        case "D":
+            totalScore += 1.0
+        default: // F
+            totalScore += 0
+        }
+    }
+    let score = totalScore / Double(subjects.count)
+    let strScore = String(format: "%.2f", score)
+    print("평점: \(strScore)")
+}
 
 while loop {
     print("원하는 기능을 입력해주세요")
@@ -36,13 +64,13 @@ while loop {
         case "1":
             print("추가할 학생의 이름을 입력해주세요")
             if let name = readLine(), !name.isEmpty {
-                if !checkStudent(name: name) {
+                guard getIndex(name: name) != nil else {
+                    let info = Info(name: name)
+                    infomations.append(info)
                     print("\(name) 학생을 추가했습니다.")
-                    let student: Student = Student(name: name)
-                    students.append(student)
-                } else {
-                    print("\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다.")
+                    break
                 }
+                print("\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다.")
             } else {
                 print("입력이 잘못되었습니다. 다시 확인해주세요.")
             }
@@ -50,11 +78,12 @@ while loop {
         case "2":
             print("삭제할 학생의 이름을 입력해주세요")
             if let name = readLine(), !name.isEmpty {
-                if checkStudent(name: name) {
-                    print("\(name) 학생을 삭제하였습니다.")
-                } else {
+                guard let index = getIndex(name: name) else {
                     print("\(name) 학생을 찾지 못했습니다.")
+                    break
                 }
+                infomations.remove(at: index)
+                print("\(name) 학생을 삭제하였습니다.")
             } else {
                 print("입력이 잘못되었습니다. 다시 확인해주세요.")
             }
@@ -65,35 +94,51 @@ while loop {
             print("만약에 학생의 성적 중 해당 과목이 존재하면 기존 점수가 갱신됩니다.")
             if let info = readLine()?.split(separator: " "), !info.isEmpty && info.count == 3 {
                 let name = String(info[0])
-                // 학생이 없으면 추가하지 않기
                 let subject = String(info[1])
                 let score = String(info[2])
-                let infomation = Info(student: Student(name: name), subject: subject, score: score)
-                
+                guard let index = getIndex(name: name) else {
+                    print("\(name) 학생을 찾지 못했습니다.")
+                    break
+                }
+                infomations[index].subject[subject] = score
+                print("\(name) 학생의 \(subject) 과목이 \(score)로 추가(변경)되었습니다.")
             } else {
                 print("입력이 잘못되었습니다. 다시 확인해주세요.")
             }
-            
-            
-            
-            
-            
-            
 
         case "4":
-            print("4 입력")
-
+            print("성적을 삭제할 학생의 이름, 과목 이름을 띄어쓰기로 구분하여 차례로 작성해주세요.")
+            print("입력예) Mickey Swift")
+            if let info = readLine()?.split(separator: " "), !info.isEmpty && info.count == 2 {
+                let name = String(info[0])
+                let subject = String(info[1])
+                guard let index = getIndex(name: name) else {
+                    print("\(name) 학생을 찾지 못했습니다.")
+                    break
+                }
+                infomations[index].subject.removeValue(forKey: subject)
+                print("\(name) 학생의 \(subject) 과목의 성적이 삭제되었습니다.")
+            } else {
+                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+            }
         case "5":
-            print("5 입력")
+            print("평점을 알고싶은 학생의 이름을 입력해주세요")
+            if let name = readLine(), !name.isEmpty {
+                guard let index = getIndex(name: name) else {
+                    print("\(name) 학생을 찾지 못했습니다.")
+                    break
+                }
+                getGrade(name: name, index: index)
+            } else {
+                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+            }
 
         case "x", "X":
             print("프로그램을 종료합니다...")
             loop = false
-
+            
         default:
             print("뭔가 입력이 잘못되었습니다. 1~5 사이의 숫자 혹은 X를 입력해주세요.")
         }
     }
 }
-
-
