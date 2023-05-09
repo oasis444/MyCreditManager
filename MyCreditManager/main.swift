@@ -7,6 +7,20 @@
 
 import Foundation
 
+enum InputError: Error {
+    case wrongInput
+    case duplicated(name: String)
+    case noName(name: String)
+
+    var debugDescription: String {
+        switch self {
+        case .wrongInput: return "입력이 잘못되었습니다. 다시 확인해주세요."
+        case .duplicated(let name): return "\(name)은 이미 있습니다. 추가하지 않습니다."
+        case .noName(let name): return "\(name)학생을 찾지 못했습니다."
+        }
+    }
+}
+
 class Info {
     let name: String
     var subject: [String: String]
@@ -70,22 +84,26 @@ while loop {
                     print("\(name) 학생을 추가했습니다.")
                     break
                 }
-                print("\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다.")
+                let error = InputError.duplicated(name: name).debugDescription
+                print(error)
             } else {
-                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+                let error = InputError.wrongInput.debugDescription
+                print(error)
             }
             
         case "2":
             print("삭제할 학생의 이름을 입력해주세요")
             if let name = readLine(), !name.isEmpty {
                 guard let index = getIndex(name: name) else {
-                    print("\(name) 학생을 찾지 못했습니다.")
+                    let error = InputError.noName(name: name).debugDescription
+                    print(error)
                     break
                 }
                 infomations.remove(at: index)
                 print("\(name) 학생을 삭제하였습니다.")
             } else {
-                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+                let error = InputError.wrongInput.debugDescription
+                print(error)
             }
             
         case "3":
@@ -97,13 +115,15 @@ while loop {
                 let subject = String(info[1])
                 let score = String(info[2])
                 guard let index = getIndex(name: name) else {
-                    print("\(name) 학생을 찾지 못했습니다.")
+                    let error = InputError.noName(name: name)
+                    print(error)
                     break
                 }
                 infomations[index].subject[subject] = score
                 print("\(name) 학생의 \(subject) 과목이 \(score)로 추가(변경)되었습니다.")
             } else {
-                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+                let error = InputError.wrongInput.debugDescription
+                print(error)
             }
 
         case "4":
@@ -113,24 +133,28 @@ while loop {
                 let name = String(info[0])
                 let subject = String(info[1])
                 guard let index = getIndex(name: name) else {
-                    print("\(name) 학생을 찾지 못했습니다.")
+                    let error = InputError.noName(name: name)
+                    print(error)
                     break
                 }
                 infomations[index].subject.removeValue(forKey: subject)
                 print("\(name) 학생의 \(subject) 과목의 성적이 삭제되었습니다.")
             } else {
-                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+                let error = InputError.wrongInput.debugDescription
+                print(error)
             }
         case "5":
             print("평점을 알고싶은 학생의 이름을 입력해주세요")
             if let name = readLine(), !name.isEmpty {
                 guard let index = getIndex(name: name) else {
-                    print("\(name) 학생을 찾지 못했습니다.")
+                    let error = InputError.noName(name: name)
+                    print(error)
                     break
                 }
                 getGrade(name: name, index: index)
             } else {
-                print("입력이 잘못되었습니다. 다시 확인해주세요.")
+                let error = InputError.wrongInput.debugDescription
+                print(error)
             }
 
         case "x", "X":
@@ -138,7 +162,8 @@ while loop {
             loop = false
             
         default:
-            print("뭔가 입력이 잘못되었습니다. 1~5 사이의 숫자 혹은 X를 입력해주세요.")
+            let error = InputError.wrongInput.debugDescription
+            print(error)
         }
     }
 }
